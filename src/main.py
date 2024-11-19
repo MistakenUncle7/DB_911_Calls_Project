@@ -1,117 +1,146 @@
-import customtkinter as ctk
+'''
+DESCRIPTION OF THE PROGRAM
+'''
 
-# title_label = ctk.CTkLabel(root, text="Searc Bar", font=ctk.CTkFont(size=30, weight="bold"))
-# title_label.pack()
 
-import customtkinter as ctk
 import mysql.connector
+import os
+import time
 from mysql.connector import Error
+from datetime import datetime
 
-# Function to connect to the database
+def clear_screen(seconds):
+    time.sleep(seconds)
+    if os.name == 'nt':
+        os.system('cls')
+
 def connect_to_db():
     try:
         connection = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="",
-            database="911_emergency_calls"  # Replace with your database name
+            password="root",
+            database="911_emergency_calls",
+            port=3307 #UniServerZ port
         )
+
         if connection.is_connected():
-            print("Connected to MySQL database")
+            print("Connected to MySQL database via UniServerZ")
             return connection
+    
     except Error as e:
         print(f"Error: {e}")
         return None
+    
+def get_date_time():
+    current_datetime = datetime.now()
+    return current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-# Function to handle insert query
-def insert_data():
-    name = entry_name.get()
-    age = entry_age.get()
+def get_information():
+    values = []
 
+    call_key = "Randomsomething"
+    call_date_time = get_date_time()
+    priority = ""
+    call_number = input("Insert your phone number: ")
+
+    district = input("Insert the district abbreviation: ")
+    desription = input("Insert the name of the crime: ")
+    incident_location = input("Insert the location where the crime occured: ")
+    needs_sync = input("Press '1' if the data is updated in all devices: ")
+
+    location = input("Insert the reporters localization: ")
+    neighborhood = input("Insert the neighborhood of the incident: ")
+    council_district = input("Insert the number of the council district: ")
+    com_stat_areas = input("Insert a known neighborhoods near the incident (remember to use '/' to separate them): ")
+    census_tracts = input("Insert the census tract: ")
+    census_tracts = "Census Tract " + census_tracts
+    zip_code = input("Insert the ZIP Code: ")
+    esri_oid = input("Insert the Esri OID: ")
+
+    police_post = input("Insert the number of the police post: ")
+    sherrif_district = input("Insert the sherrif district: ")
+    police_district = input("Insert the police district: ")
+
+    fields = [call_key, call_date_time, priority, call_number, district, desription, incident_location, needs_sync, 
+              location, neighborhood, council_district, com_stat_areas, census_tracts, zip_code, esri_oid, police_post, 
+              sherrif_district, police_district]
+    
+    for element in fields:
+        values.append(element)
+
+    for _ in values:
+        print(_)
+
+
+def insert_to_db(information):
+
+    # police_stations table
+
+    # locations table
+    
+    # incidents table
+
+    # calls table
+
+    try:
+        py = 1
+    except Error as e:
+        print(f"Error: {e}")
+        #connection.rollback()
+
+
+
+
+def main():
     connection = connect_to_db()
-    if connection:
-        cursor = connection.cursor()
-        query = "INSERT INTO your_table_name (name, age) VALUES (%s, %s)"
-        cursor.execute(query, (name, age))
-        connection.commit()
-        cursor.close()
-        connection.close()
-        print("Data inserted successfully")
-    else:
-        print("Connection failed.")
+    while connection:
+        clear_screen(5)
 
-# Function to handle update query
-def update_data():
-    id = entry_id.get()
-    name = entry_name.get()
-    age = entry_age.get()
+        print("\n--- Menu ---")
+        print("Selet the index of the operation you would like to realize")
+        print("1. Insert")
+        print("2. Update")
+        print("3. Delete")
+        print("0. Exit")
 
-    connection = connect_to_db()
-    if connection:
-        cursor = connection.cursor()
-        query = "UPDATE your_table_name SET name = %s, age = %s WHERE id = %s"
-        cursor.execute(query, (name, age, id))
-        connection.commit()
-        cursor.close()
-        connection.close()
-        print("Data updated successfully")
-    else:
-        print("Connection failed.")
+        choice = input("\nOption: ")
 
-# Function to handle delete query
-def delete_data():
-    id = entry_id.get()
+        if choice == "1":
+            print("Selected 1")
+        elif choice == "2":
+            print("Selected 2")
+        elif choice == "3":
+            print("Selected 3")
+        elif choice == "0":
+            print("Selected Exit")
+            break
+        else:
+            print("Invalid option, please try again")
 
-    connection = connect_to_db()
-    if connection:
-        cursor = connection.cursor()
-        query = "DELETE FROM your_table_name WHERE id = %s"
-        cursor.execute(query, (id,))
-        connection.commit()
-        cursor.close()
-        connection.close()
-        print("Data deleted successfully")
-    else:
-        print("Connection failed.")
+    # connection.close()
 
-# Create the main window
-root = ctk.CTk()
 
-# Dropdown for Structural Queries
-dropdown = ctk.CTkComboBox(root, values=["Insert", "Update", "Delete"], width=200)
-dropdown.grid(row=0, column=0, padx=10, pady=10)
+# main()
 
-# Entry fields for form (Insert and Update)
-label_name = ctk.CTkLabel(root, text="Name:")
-label_name.grid(row=1, column=0, padx=10, pady=5)
-entry_name = ctk.CTkEntry(root, width=200)
-entry_name.grid(row=1, column=1, padx=10, pady=5)
+get_information()
 
-label_age = ctk.CTkLabel(root, text="Age:")
-label_age.grid(row=2, column=0, padx=10, pady=5)
-entry_age = ctk.CTkEntry(root, width=200)
-entry_age.grid(row=2, column=1, padx=10, pady=5)
+''' Passing from a dictionary to a tuple THE INSERT VALUES MUST BE A TUPLE
+data = {
+    "columna1": "valor1",
+    "columna2": "valor2",
+    "columna3": "valor3"
+}
 
-# Additional entry for Update and Delete
-label_id = ctk.CTkLabel(root, text="ID:")
-label_id.grid(row=0, column=1, padx=10, pady=5)
-entry_id = ctk.CTkEntry(root, width=200)
-entry_id.grid(row=0, column=2, padx=10, pady=5)
+insert_query = """
+INSERT INTO tu_tabla (columna1, columna2, columna3)
+VALUES (%s, %s, %s)
+"""
 
-# Buttons for actions
-def handle_query():
-    query_type = dropdown.get()
+# Convert dictionary values to a tuple
+valores = tuple(data.values())
 
-    if query_type == "Insert":
-        insert_data()
-    elif query_type == "Update":
-        update_data()
-    elif query_type == "Delete":
-        delete_data()
+cursor.execute(insert_query, valores)
+connection.commit()
 
-button_execute = ctk.CTkButton(root, text="Execute Query", command=handle_query)
-button_execute.grid(row=3, column=0, columnspan=3, pady=10)
-
-# Run the GUI
-root.mainloop()
-
+'''

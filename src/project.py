@@ -34,7 +34,6 @@ def insert_data():
     call_date_time = entry_call_date_time.get()
     priority = entry_priority.get()
     call_number = entry_call_number.get()
-    '''
     district = entry_district.get()
     description = entry_description.get()
     incident_location = entry_incident_location.get()
@@ -62,8 +61,6 @@ def insert_data():
         except Error as e:
             print(f"Error: {e}")
             return None
-
-'''
 
 '''
 connection = connect_to_db()
@@ -115,5 +112,40 @@ label_call_number = ctk.CTkLabel(app, text="Call Number:")
 label_call_number.grid(row=1, column=0, padx=10, pady=5)
 entry_call_number = ctk.CTkEntry(app, width=200)
 entry_call_number.grid(row=1, column=1, padx=10, pady=5)
+
+label_district = ctk.CTkLabel(app, text="District:")
+label_district.grid(row=1, column=0, padx=10, pady=5)
+entry_district = ctk.CTkEntry(app, width=200)
+entry_district.grid(row=1, column=1, padx=10, pady=5)
+
+label_description = ctk.CTkLabel(app, text="Description:")
+label_description.grid(row=1, column=0, padx=10, pady=5)
+entry_description = ctk.CTkEntry(app, width=200)
+entry_description.grid(row=1, column=1, padx=10, pady=5)
+
+label_incident_location = ctk.CTkLabel(app, text="Incident Location:")
+label_incident_location.grid(row=1, column=0, padx=10, pady=5)
+entry_incident_location = ctk.CTkEntry(app, width=200)
+entry_incident_location.grid(row=1, column=1, padx=10, pady=5)
+
+label_needs_sync = ctk.CTkLabel(app, text="Needs Sync:")
+label_needs_sync.grid(row=1, column=0, padx=10, pady=5)
+entry_needs_sync = ctk.CTkEntry(app, width=200)
+entry_needs_sync.grid(row=1, column=1, padx=10, pady=5)
+
+label_location_record_ID = ctk.CTkLabel(app, text="Location Record ID:")
+label_location_record_ID.grid(row=1, column=0, padx=10, pady=5)
+entry_location_record_ID = ctk.CTkEntry(app, width=200)
+entry_location_record_ID.grid(row=1, column=1, padx=10, pady=5)
+
+label_location = ctk.CTkLabel(app, text="Location:")
+label_location.grid(row=1, column=0, padx=10, pady=5)
+entry_location = ctk.CTkEntry(app, width=200)
+entry_location.grid(row=1, column=1, padx=10, pady=5)
+
+label_council_district = ctk.CTkLabel(app, text="Council District:")
+label_council_district.grid(row=1, column=0, padx=10, pady=5)
+entry_council_district = ctk.CTkEntry(app, width=200)
+entry_council_district.grid(row=1, column=1, padx=10, pady=5)
 
 app.mainloop()
