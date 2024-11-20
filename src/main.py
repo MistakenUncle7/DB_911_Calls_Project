@@ -32,69 +32,134 @@ def connect_to_db():
         print(f"Error: {e}")
         return None
     
+
+def delete_from_db():
+    print("NOT YET")
+
 def get_date_time():
     current_datetime = datetime.now()
     return current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
 def get_information():
-    values = []
+    values = {}
 
-    call_key = "Randomsomething"
-    call_date_time = get_date_time()
-    priority = ""
-    call_number = input("Insert your phone number: ")
+    # calls table fields
+    values["call_key"] = "Randomsomething" # Need to create the way to generate a CALLKEY
+    values["call_date_time"] = get_date_time()
+    values["priority"] = "" # Need to make the user choose from the ENUM
+    values["call_number"] = input("Insert your phone number: ")
 
-    district = input("Insert the district abbreviation: ")
-    desription = input("Insert the name of the crime: ")
-    incident_location = input("Insert the location where the crime occured: ")
-    needs_sync = input("Press '1' if the data is updated in all devices: ")
+    # incidents table fields
+    values["district"] = input("Insert the district abbreviation: ") # See if you can do it an ENUM
+    values["desription"] = input("Insert the name of the crime: ")
+    values["incident_location"] = input("Insert the location where the crime occured: ")
+    values["needs_sync"] = input("Press '1' if the data is updated in all devices: ") # Check how to make the user input 1 or 0
 
-    location = input("Insert the reporters localization: ")
-    neighborhood = input("Insert the neighborhood of the incident: ")
-    council_district = input("Insert the number of the council district: ")
-    com_stat_areas = input("Insert a known neighborhoods near the incident (remember to use '/' to separate them): ")
+    # locations table fields
+    values["location"] = input("Insert the reporters localization: ")
+    values["neighborhood"] = input("Insert the neighborhood of the incident: ")
+    values["council_district"] = input("Insert the number of the council district: ")
+    values["com_stat_areas"] = input("Insert a known neighborhoods near the incident (remember to use '/' to separate them): ") # Upgrade this
     census_tracts = input("Insert the census tract: ")
-    census_tracts = "Census Tract " + census_tracts
-    zip_code = input("Insert the ZIP Code: ")
-    esri_oid = input("Insert the Esri OID: ")
+    values["census_tracts"] = "Census Tract " + census_tracts
+    values["zip_code"] = input("Insert the ZIP Code: ")
+    values["esri_oid"] = input("Insert the Esri OID: ")
 
-    police_post = input("Insert the number of the police post: ")
-    sherrif_district = input("Insert the sherrif district: ")
-    police_district = input("Insert the police district: ")
+    # police_stations table fields
+    values["police_post"] = input("Insert the number of the police post: ")
+    values["sherrif_district"] = input("Insert the sherrif district: ")
+    values["police_district"] = input("Insert the police district: ")
 
-    fields = [call_key, call_date_time, priority, call_number, district, desription, incident_location, needs_sync, 
-              location, neighborhood, council_district, com_stat_areas, census_tracts, zip_code, esri_oid, police_post, 
-              sherrif_district, police_district]
-    
-    for element in fields:
-        values.append(element)
-
-    for _ in values:
-        print(_)
+    return values
 
 
-def insert_to_db(information):
-
-    # police_stations table
-
-    # locations table
-    
-    # incidents table
-
-    # calls table
-
+def insert_to_db(connection):
     try:
-        py = 1
+        cursor = connection.cursor()
+        connection.start_transaction()
+
+        data = get_information()
+
+        # Insert into police_station table
+        police_stations_query = """ 
+        INSERT INTO police_stations (police_post, sheriff_district, police_district)
+        VALUES (%s, %s, %s)
+        """
+        police_stations_data = (
+            data["police_post"],
+            data["sheriff_district"],
+            data["police_district"]
+        )
+        cursor.execute(police_stations_query, police_stations_data)
+        connection.commit()
+        police_station_ID = cursor.lastrowid
+        print(f"Inserted into 'police_stations' with ID: {police_station_ID}")
+
+        # Insert into locations table
+        locations_query = """
+        INSERT INTO locations (location, council_district, community_statistical_areas ,census_tracts, zip_code, esri_oid, neighborhood)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        locations_data = (
+            data["location"],
+            data["council_district"],
+            data["com_stat_areas"],
+            data["census_tracts"],
+            data["zip_code"],
+            data["esri_oid"],
+            data["neighborhood"]
+        )
+        cursor.execute(locations_query, locations_data)
+        connection.commit()
+        location_record_ID = cursor.lastrowid
+        print(f"Inserted into 'locations' with ID: {location_record_ID}")
+
+        # Insert into incidents table
+        incidents_query = """
+        INSERT INTO incidents (district, description, incident_location, needs_sync)
+        VALUES (%s, %s, %s, %s)
+        """
+        incidents_data = (
+            data["district"],
+            data["description"],
+            data["incident_location"],
+            data["needs_sync"]
+        )
+        cursor.execute(incidents_query, incidents_data)
+        connection.commit()
+        record_ID = cursor.lastrowid
+        print(f"Inserted into 'incidents' with ID: {record_ID}")
+
+        # Insert into calls table
+        calls_query = """
+        INSERT INTO calls (call_key, call_date_time, priority, call_number)
+        VALUES (%s, %s, %s, %s)
+        """
+        calls_data = (
+            data["call_key"],
+            data["call_date_time"],
+            data["priority"],
+            data["call_number"]
+        )
+        cursor.execute(calls_query, calls_data)
+        connection.commit()
+        record_ID = cursor.lastrowid
+        print(f"Inserted into 'calls' with ID: {record_ID}")
+
+
     except Error as e:
-        print(f"Error: {e}")
-        #connection.rollback()
+        connection.rollback()
+        print(f"Transaction failed: {e}")
 
-
+    finally:
+        if cursor:
+            cursor.close()
 
 
 def main():
     connection = connect_to_db()
     while connection:
+        cursor = connection.cursor()
         clear_screen(5)
 
         print("\n--- Menu ---")
@@ -108,39 +173,23 @@ def main():
 
         if choice == "1":
             print("Selected 1")
+            insert_to_db(connection)
         elif choice == "2":
             print("Selected 2")
         elif choice == "3":
             print("Selected 3")
         elif choice == "0":
             print("Selected Exit")
+            cursor.close()
+            connection.close()
             break
         else:
             print("Invalid option, please try again")
 
     # connection.close()
 
+def update_db():
+    print("NOT YET")
 
-# main()
-
-get_information()
-
-''' Passing from a dictionary to a tuple THE INSERT VALUES MUST BE A TUPLE
-data = {
-    "columna1": "valor1",
-    "columna2": "valor2",
-    "columna3": "valor3"
-}
-
-insert_query = """
-INSERT INTO tu_tabla (columna1, columna2, columna3)
-VALUES (%s, %s, %s)
-"""
-
-# Convert dictionary values to a tuple
-valores = tuple(data.values())
-
-cursor.execute(insert_query, valores)
-connection.commit()
-
-'''
+if __name__ == "__main__":
+    main()
