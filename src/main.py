@@ -33,8 +33,77 @@ def connect_to_db():
         return None
     
 
-def delete_from_db():
-    print("NOT YET")
+def delete_from_db(connection):
+    try:
+        cursor = connection.cursor()
+        connection.start_transaction()
+
+        call_key = input("Enter the Call Key to delete: ")
+
+        # Verify if the call_key exists
+        check_call_query = """
+        SELECT COUNT(*) FROM calls WHERE call_key = %s
+        """
+        cursor.execute(check_call_query, (call_key,))
+        result = cursor.fetchone()
+
+        if result[0] == 0:
+            print(f"No record found with call_key: {call_key}")
+            return
+
+        delete_call_query = """
+        DELETE FROM calls WHERE call_key = %s
+        """
+        cursor.excecute(delete_call_query, (call_key,))
+        connection.commit()
+        print("Deletion process completed successfully.")
+
+        '''
+        call_query = """
+        SELECT record_ID FROM calls WHERE call_key = %s
+        """
+        call_key = input("Enter the Call Key to delete: ")
+        cursor.execute(call_query, (call_key,))
+        record_ID = cursor.fetchone()
+
+        if not record_ID:
+            print(f"No record found for Call Key: {call_key}")
+            return
+        
+        record_ID = record_ID[0]
+
+        incident_query = """
+        SELECT location_record_ID FROM incidents WHERE record_ID = %s
+        """
+        cursor.execute(incident_query, (record_ID))
+        location_record_ID = cursor.fetchone()
+
+        if not location_record_ID:
+            print(f"Not record found for record_ID: {record_ID}")
+            return
+        
+        location_record_ID = location_record_ID[0]
+
+        location_query = """
+        SELECT police_station_ID FROM locations WHERE location_record_ID = %s
+        """
+        cursor.execute(location_query, (location_record_ID,))
+        police_station_ID = cursor.fetchone()
+
+        if not police_station_ID:
+            print(f"No location found for location_record_ID: {location_record_ID}")
+            return
+        
+        police_station_ID = police_station_ID[0]
+        '''
+
+    except Error as e:
+        connection.rollback()
+        print(f"Transaction failed: {e}")
+
+    finally:
+        if cursor:
+            cursor.close()
 
 def get_date_time():
     current_datetime = datetime.now()
@@ -97,8 +166,8 @@ def insert_to_db(connection):
 
         # Insert into locations table
         locations_query = """
-        INSERT INTO locations (location, council_district, community_statistical_areas ,census_tracts, zip_code, esri_oid, neighborhood)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO locations (location, council_district, community_statistical_areas , census_tracts, zip_code, esri_oid, neighborhood, police_station_ID)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
         locations_data = (
             data["location"],
@@ -107,7 +176,8 @@ def insert_to_db(connection):
             data["census_tracts"],
             data["zip_code"],
             data["esri_oid"],
-            data["neighborhood"]
+            data["neighborhood"],
+            police_station_ID
         )
         cursor.execute(locations_query, locations_data)
         connection.commit()
@@ -116,14 +186,15 @@ def insert_to_db(connection):
 
         # Insert into incidents table
         incidents_query = """
-        INSERT INTO incidents (district, description, incident_location, needs_sync)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO incidents (district, description, incident_location, needs_sync, location_record_ID)
+        VALUES (%s, %s, %s, %s, %s)
         """
         incidents_data = (
             data["district"],
             data["description"],
             data["incident_location"],
-            data["needs_sync"]
+            data["needs_sync"],
+            location_record_ID
         )
         cursor.execute(incidents_query, incidents_data)
         connection.commit()
@@ -132,19 +203,19 @@ def insert_to_db(connection):
 
         # Insert into calls table
         calls_query = """
-        INSERT INTO calls (call_key, call_date_time, priority, call_number)
+        INSERT INTO calls (call_key, call_date_time, priority, call_number, record_ID)
         VALUES (%s, %s, %s, %s)
         """
         calls_data = (
             data["call_key"],
             data["call_date_time"],
             data["priority"],
-            data["call_number"]
+            data["call_number"],
+            record_ID
         )
         cursor.execute(calls_query, calls_data)
         connection.commit()
-        record_ID = cursor.lastrowid
-        print(f"Inserted into 'calls' with ID: {record_ID}")
+        print(f"Inserted into 'calls' with ID: {data['call_key']}")
 
 
     except Error as e:
@@ -178,6 +249,7 @@ def main():
             print("Selected 2")
         elif choice == "3":
             print("Selected 3")
+            delete_from_db(connection)
         elif choice == "0":
             print("Selected Exit")
             cursor.close()

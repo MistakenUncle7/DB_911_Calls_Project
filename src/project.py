@@ -41,6 +41,7 @@ def insert_data():
     location_record_ID = entry_location_record_ID.get()
     location = entry_location.get()
     council_district = entry_council_district.get()
+    '''
     community_statistical_areas = entry_community_statistical_areas.get()
     census_tracts = entry_census_tracts.get()
     zip_code = entry_zip_code.get()
@@ -50,7 +51,7 @@ def insert_data():
     police_post = entry_police_post.get()
     sheriff_district = entry_sheriff_district.get()
     police_district = entry_police_district.get()
-    
+    '''
 
     connection = connect_to_db()
     if connection:
