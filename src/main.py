@@ -51,18 +51,9 @@ def delete_from_db(connection):
             print(f"No record found with call_key: {call_key}")
             return
 
-        delete_call_query = """
-        DELETE FROM calls WHERE call_key = %s
-        """
-        cursor.execute(delete_call_query, (call_key,))
-        connection.commit()
-        print("Deletion process completed successfully.")
-
-        '''
         call_query = """
         SELECT record_ID FROM calls WHERE call_key = %s
         """
-        call_key = input("Enter the Call Key to delete: ")
         cursor.execute(call_query, (call_key,))
         record_ID = cursor.fetchone()
 
@@ -75,7 +66,7 @@ def delete_from_db(connection):
         incident_query = """
         SELECT location_record_ID FROM incidents WHERE record_ID = %s
         """
-        cursor.execute(incident_query, (record_ID))
+        cursor.execute(incident_query, (record_ID,))
         location_record_ID = cursor.fetchone()
 
         if not location_record_ID:
@@ -95,7 +86,14 @@ def delete_from_db(connection):
             return
         
         police_station_ID = police_station_ID[0]
-        '''
+
+        delete_police_station_querry = """
+        DELETE FROM police_stations WHERE police_station_ID = %s
+        """
+        cursor.execute(delete_police_station_querry, (police_station_ID,))
+        connection.commit()
+        print(f"Record with call_key {call_key} and all related entries deleted successfully.")
+        
 
     except Error as e:
         connection.rollback()
