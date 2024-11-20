@@ -54,7 +54,7 @@ def delete_from_db(connection):
         delete_call_query = """
         DELETE FROM calls WHERE call_key = %s
         """
-        cursor.excecute(delete_call_query, (call_key,))
+        cursor.execute(delete_call_query, (call_key,))
         connection.commit()
         print("Deletion process completed successfully.")
 
@@ -115,12 +115,12 @@ def get_information():
     # calls table fields
     values["call_key"] = "Randomsomething" # Need to create the way to generate a CALLKEY
     values["call_date_time"] = get_date_time()
-    values["priority"] = "" # Need to make the user choose from the ENUM
+    values["priority"] = input("Insert the emergency level: ") # Need to make the user choose from the ENUM
     values["call_number"] = input("Insert your phone number: ")
 
     # incidents table fields
     values["district"] = input("Insert the district abbreviation: ") # See if you can do it an ENUM
-    values["desription"] = input("Insert the name of the crime: ")
+    values["description"] = input("Insert the name of the crime: ")
     values["incident_location"] = input("Insert the location where the crime occured: ")
     values["needs_sync"] = input("Press '1' if the data is updated in all devices: ") # Check how to make the user input 1 or 0
 
@@ -136,7 +136,7 @@ def get_information():
 
     # police_stations table fields
     values["police_post"] = input("Insert the number of the police post: ")
-    values["sherrif_district"] = input("Insert the sherrif district: ")
+    values["sheriff_district"] = input("Insert the sherrif district: ")
     values["police_district"] = input("Insert the police district: ")
 
     return values
@@ -160,7 +160,7 @@ def insert_to_db(connection):
             data["police_district"]
         )
         cursor.execute(police_stations_query, police_stations_data)
-        connection.commit()
+        # connection.commit()
         police_station_ID = cursor.lastrowid
         print(f"Inserted into 'police_stations' with ID: {police_station_ID}")
 
@@ -180,7 +180,7 @@ def insert_to_db(connection):
             police_station_ID
         )
         cursor.execute(locations_query, locations_data)
-        connection.commit()
+        # connection.commit()
         location_record_ID = cursor.lastrowid
         print(f"Inserted into 'locations' with ID: {location_record_ID}")
 
@@ -197,14 +197,14 @@ def insert_to_db(connection):
             location_record_ID
         )
         cursor.execute(incidents_query, incidents_data)
-        connection.commit()
+        # connection.commit()
         record_ID = cursor.lastrowid
         print(f"Inserted into 'incidents' with ID: {record_ID}")
 
         # Insert into calls table
         calls_query = """
         INSERT INTO calls (call_key, call_date_time, priority, call_number, record_ID)
-        VALUES (%s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s)
         """
         calls_data = (
             data["call_key"],
@@ -217,6 +217,8 @@ def insert_to_db(connection):
         connection.commit()
         print(f"Inserted into 'calls' with ID: {data['call_key']}")
 
+        wait = input("Press enter to continue: ")
+
 
     except Error as e:
         connection.rollback()
@@ -228,6 +230,7 @@ def insert_to_db(connection):
 
 
 def main():
+    clear_screen(0)
     connection = connect_to_db()
     while connection:
         cursor = connection.cursor()
