@@ -283,191 +283,6 @@ def main():
     # connection.close()
 
 def update_db(connection):
-
-    '''try:
-        cursor = connection.cursor()
-        connection.start_transaction()
-
-        call_key = input("Enter the Call Key to update: ")
-
-        # Verify if the call_key exists
-        check_call_query = """
-        SELECT COUNT(*) FROM calls WHERE call_key = %s
-        """
-        cursor.execute(check_call_query, (call_key,))
-        result = cursor.fetchone()
-
-        if result[0] == 0:
-            print(f"No record found with call_key: {call_key}")
-            return
-
-        call_query = """
-        SELECT record_ID FROM calls WHERE call_key = %s
-        """
-        cursor.execute(call_query, (call_key,))
-        record_ID = cursor.fetchone()
-
-        if not record_ID:
-            print(f"No record found for Call Key: {call_key}")
-            return
-        
-        record_ID = record_ID[0]
-
-        incident_query = """
-        SELECT location_record_ID FROM incidents WHERE record_ID = %s
-        """
-        cursor.execute(incident_query, (record_ID,))
-        location_record_ID = cursor.fetchone()
-
-        if not location_record_ID:
-            print(f"Not record found for record_ID: {record_ID}")
-            return
-        
-        location_record_ID = location_record_ID[0]
-
-        location_query = """
-        SELECT police_station_ID FROM locations WHERE location_record_ID = %s
-        """
-        cursor.execute(location_query, (location_record_ID,))
-        police_station_ID = cursor.fetchone()
-
-        if not police_station_ID:
-            print(f"No location found for location_record_ID: {location_record_ID}")
-            return
-        
-        police_station_ID = police_station_ID[0]
-
-        # User input
-        # emergency_levels = ["Non-Emergency", "Low", "Medium", "High", "Emergency", "Out of Service", ""]
-        # new_priority = select_from_enum(emergency_levels, "Select new priority (select 7 to skip): ")
-        new_priority = input("Enter new priority (leave blank to skip): ")
-        new_call_number = input("Enter new call number (leave blank to skip): ")
-        new_incident_location = input("Enter new incident location (leave blank to skip): ")
-        new_district = input("Enter new district (leave blank to skip): ")
-        new_neighborhood = input("Enter new neighborhood of the incident (leave blank to skip): ")
-        new_description = input("Enter new description (leave blank to skip): ")
-        new_location = input("Enter new reporters location (leave blank to skip): ")
-        new_needs_sync = input("Enter is the data updated on all devices (1 or 0) (leave blank to skip): ")
-        new_council_district = input("Enter new council district (leave blank to skip): ")
-        new_com_stat_areas = input("Enter new known neighborhoods near the incident (leave blank to skip): ")
-        new_census_tracts = input("Enter new census tracts (leave blank to skip): ")
-        new_zip_code = input("Enter new zip code (leave blank to skip): ")
-        new_esri_oid = input("Enter new esri_oid (leave blank to skip): ")
-        new_police_post = input("Enter new police post (leave blank to skip): ")
-        new_sheriff_district = input("Enter new sheriff district (leave blank to skip): ")
-        new_police_district = input("Enter new police district (leave blank to skip): ")
-
-        # Update police_stations table
-        if new_police_post:
-            update_query = """
-        UPDATE police_stations SET police_post = %s WHERE police_station_ID = %s
-        """
-            cursor.execute(update_query, (new_police_post, police_station_ID))
-        
-        if new_sheriff_district:
-            update_query = """
-        UPDATE police_stations SET sheriff_district = %s WHERE police_station_ID = %s
-        """
-            cursor.execute(update_query, (new_sheriff_district, police_station_ID))
-
-        if new_police_post:
-            update_query = """
-        UPDATE police_stations SET police_district = %s WHERE police_station_ID = %s
-        """
-            cursor.execute(update_query, (new_police_district, police_station_ID))
-
-        # Update locations table
-        if new_location:
-            update_query = """
-        UPDATE locations SET location = %s WHERE location_record_ID = %s
-        """
-            cursor.execute(update_query, (new_location, location_record_ID))
-        
-        if new_council_district:
-            update_query = """
-        UPDATE locations SET council_district = %s WHERE location_record_ID = %s
-        """
-            cursor.execute(update_query, (new_council_district, location_record_ID))
-        
-        if new_com_stat_areas:
-            update_query = """
-        UPDATE locations SET community_statistical_areas = %s WHERE location_record_ID = %s
-        """
-            cursor.execute(update_query, (new_com_stat_areas, location_record_ID))
-
-        if new_census_tracts:
-            update_query = """
-        UPDATE locations SET census_tracts = %s WHERE location_record_ID = %s
-        """
-            cursor.execute(update_query, (new_census_tracts, location_record_ID))
-
-        if new_zip_code:
-            update_query = """
-        UPDATE locations SET zip_code = %s WHERE location_record_ID = %s
-        """
-            cursor.execute(update_query, (new_zip_code, location_record_ID))
-
-        if new_esri_oid:
-            update_query = """
-        UPDATE locations SET esri_oid = %s WHERE location_record_ID = %s
-        """
-            cursor.execute(update_query, (new_esri_oid, location_record_ID))
-
-        if new_neighborhood:
-            update_query = """
-        UPDATE locations SET neighborhood = %s WHERE location_record_ID = %s
-        """
-            cursor.execute(update_query, (new_neighborhood, location_record_ID))
-
-        # Update incidents table
-        if new_district:
-            update_query = """
-        UPDATE incidents SET district = %s WHERE record_ID = %s
-        """
-            cursor.execute(update_query, (new_district, record_ID))
-
-        if new_description:
-            update_query = """
-        UPDATE incidents SET description = %s WHERE record_ID = %s
-        """
-            cursor.execute(update_query, (new_district, record_ID))
-        
-        if new_incident_location:
-            update_query = """
-        UPDATE incidents SET incident_location = %s WHERE record_ID = %s
-        """
-            cursor.execute(update_query, (new_incident_location, record_ID))
-        
-        if new_needs_sync:
-            update_query = """
-        UPDATE incidents SET needs_sync = %s WHERE record_ID = %s
-        """
-            cursor.execute(update_query, (new_needs_sync, record_ID))
-
-        # Update calls table
-        if new_priority:
-            update_query = """
-        UPDATE calls SET needs_sync = %s WHERE record_ID = %s
-        """
-            cursor.execute(update_query, (new_priority, record_ID))
-
-        if new_call_number:
-            update_query = """
-        UPDATE calls SET call_number = %s WHERE record_ID = %s
-        """
-            cursor.execute(update_query, (new_call_number, record_ID))
-
-        connection.commit()
-        print(f"Record with call_key {call_key} updated successfully.")
-
-        
-    except Error as e:
-        connection.rollback()
-        print(f"Transaction failed: {e}")
-
-    finally:
-        if cursor:
-            cursor.close()'''
     try:
         cursor = connection.cursor()
         connection.start_transaction()
@@ -524,20 +339,16 @@ def update_db(connection):
         # User input
         emergency_levels = ["Non-Emergency", "Low", "Medium", "High", "Emergency", "Out of Service", ""]
         new_priority = select_from_enum(emergency_levels, "Select new priority (select 7 to skip): ")
-        # new_priority = input("Enter new priority (leave blank to skip): ")
         new_call_number = input("Enter new call number (leave blank to skip): ")
         new_incident_location = input("Enter new incident location (leave blank to skip): ")
         districts = ["WD", "NW", "SE", "NE", "SD", "CD", "TRU", "ED", "SW", "ND", "SS", "CW", ""]
         new_district = select_from_enum(districts, "Select new district (select 13 to skip): ")
-        # new_district = input("Enter new district (leave blank to skip): ")
         new_neighborhood = input("Enter new neighborhood of the incident (leave blank to skip): ")
         new_description = input("Enter new description (leave blank to skip): ")
         new_location = input("Enter new reporters location (leave blank to skip): ")
         new_needs_sync = input("Is the new data updated in all devices? (Select 1 for Yes and 0 for No): ")
-        # new_needs_sync = input("Enter is the data updated on all devices (1 or 0) (leave blank to skip): ")
         coun_dist_num = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", ""]
         new_council_district = select_from_enum(coun_dist_num, "Select new council district (select 16 to skip): ")
-        # new_council_district = input("Enter new council district (leave blank to skip): ")
         new_com_stat_areas = input("Enter new known neighborhoods near the incident (leave blank to skip): ")
         new_census_tracts = input("Enter new census tracts (leave blank to skip): ")
         new_census_tracts = f"Census Tract {new_census_tracts}"
@@ -548,10 +359,8 @@ def update_db(connection):
         new_police_post = input("Enter new police post (leave blank to skip): ")
         sheriff_district = ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", ""]
         new_sheriff_district = select_from_enum(sheriff_district, "Select new sheriff district (select 11 to skip): ")
-        # new_sheriff_district = input("Enter new sheriff district (leave blank to skip): ")
         police_district = ["Central", "Eastern", "Northeaster", "Northern", "Northwestern", "Southeastern", "Southern", "Southwestern", "Western", ""]
         new_police_district = select_from_enum(police_district, "Select new police district (select 10 to skip): ")
-        # new_police_district = input("Enter new police district (leave blank to skip): ")
 
         # Update police_stations table
         if new_police_post:
